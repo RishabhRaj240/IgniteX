@@ -2077,3 +2077,127 @@ input, select, textarea {
     margin-bottom: 20px !important;
   }
 }
+
+/* =====================================================
+   MEET OUR TEAM SECTION
+   ===================================================== */
+
+.team-section {
+  padding: 100px 0 120px;
+  background-color: #0a0a0a;
+  border-top: 1px solid var(--border-standard);
+}
+
+/* --- Header --- */
+.team-header {
+  text-align: center;
+  margin-bottom: 64px;
+}
+
+.team-heading {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 800;
+  font-size: 36px;
+  letter-spacing: 3px;
+  color: #ffffff;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.team-divider {
+  border: none;
+  border-top: 2px solid #E8500A;
+  width: 80px;
+  margin: 0 auto;
+  opacity: 0.85;
+}
+
+/* --- Cards Grid --- */
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 32px;
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+@media (max-width: 640px) {
+  .team-grid {
+    grid-template-columns: 1fr;
+    max-width: 420px;
+  }
+}
+
+/* --- Individual Card --- */
+.team-card {
+  position: relative;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.4s ease;
+}
+
+.team-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 16px 48px rgba(232, 80, 10, 0.25);
+}
+
+/* --- Photo Area (portrait 3/4 ratio) --- */
+.team-card-photo {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Initials placeholder shown until real photo is set */
+.team-card-initials {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 800;
+  font-size: 72px;
+  color: rgba(255, 255, 255, 0.08);
+  letter-spacing: 4px;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* --- Orange Banner (absolute bottom) --- */
+.team-card-banner {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(135deg, #E8500A 0%, #F05A1A 100%);
+  padding: 18px 24px 20px;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.team-card:hover .team-card-banner {
+  transform: translateY(-6px);
+}
+
+.team-card-name {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  color: #ffffff;
+  margin: 0 0 4px 0;
+  line-height: 1.2;
+}
+
+.team-card-role {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}

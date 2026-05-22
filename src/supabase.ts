@@ -16,10 +16,18 @@ if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KE
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export async function signInWithGoogle() {
+  // Use the explicit site URL if set (recommended for Vercel deployments),
+  // otherwise fall back to the current origin (works fine for local dev).
+  const redirectTo = import.meta.env.VITE_SITE_URL || window.location.origin;
+
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: window.location.origin,
+      redirectTo,
+      queryParams: {
+        // Always show the Google account picker so users can switch accounts
+        prompt: "select_account",
+      },
     },
   });
   if (error) {

@@ -7,6 +7,8 @@ import imgOmnifoodHero from "./assets/Omnifood-hero.png";
 import imgOmnifood from "./assets/Omnifood.png";
 import imgRedefineGaming from "./assets/Redefine-gaming.png";
 import imgGym from "./assets/Gym.png";
+import imgKishan from "./assets/Kishan.jpeg";
+import imgRishab from "./assets/Rishab.png";
 import { 
   ArrowRight, 
   Eye, 
@@ -1114,6 +1116,48 @@ export default function App() {
               We reject off-the-shelf templates and lazy framework structures, opting instead to write custom 
               lightweight codebases that load instantly, secure your digital assets, and deliver spectacular brand presence.
             </p>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION — MEET OUR TEAM */}
+      <section id="team" className="team-section">
+        <div className="container">
+          {/* Section Header */}
+          <div className="team-header fade-up">
+            <h2 className="section-heading fade-up">MEET OUR TEAM</h2>
+            <hr className="team-divider" />
+          </div>
+
+          {/* Cards Grid */}
+          <div className="team-grid">
+
+            {/* Card 1 — Kishan Sahu */}
+            <div className="team-card fade-up delay-100">
+              <div
+                className="team-card-photo"
+                style={{ backgroundImage: `url(${imgKishan})` }}
+              >
+              </div>
+              <div className="team-card-banner">
+                <p className="eyebrow fade-up">Kishan Sahu</p>
+                <p className="eyebrow fade-up">Creative Director</p>
+              </div>
+            </div>
+
+            {/* Card 2 — Rishab Raj */}
+            <div className="team-card fade-up delay-200">
+              <div
+                className="team-card-photo"
+                style={{ backgroundImage: `url(${imgRishab})` }}
+              >
+              </div>
+              <div className="team-card-banner">
+                <p className="eyebrow fade-up">Rishab Raj</p>
+                <p className="eyebrow fade-up">Web Designer</p>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
