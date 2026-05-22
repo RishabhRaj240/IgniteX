@@ -29,6 +29,11 @@
   padding: 0;
 }
 
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
 html {
   scroll-behavior: smooth;
   background-color: var(--bg-pure-black);
@@ -38,8 +43,13 @@ body {
   background-color: var(--bg-pure-black);
   color: var(--text-primary);
   font-family: var(--font-sans);
-  overflow-x: hidden;
   line-height: 1.6;
+}
+
+#root, .app-root {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
 }
 
 a {
@@ -187,6 +197,22 @@ input, select, textarea {
   color: var(--accent-gold-dark);
 }
 
+/* IgniteX logo image — header */
+.header-logo-img {
+  height: 56px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+/* IgniteX logo image — footer */
+.footer-logo-img {
+  height: 64px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
 .nav-links-desktop {
   display: flex;
   align-items: center;
@@ -286,14 +312,17 @@ input, select, textarea {
   top: 0;
   right: -320px;
   width: 320px;
+  max-width: 100%;
   height: 100vh;
   background-color: #0b0b0b;
   border-left: 1px solid var(--border-standard);
   z-index: 99;
   transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  padding: 100px 40px;
+  padding: 100px 40px 40px 40px;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 40px;
 }
 
@@ -301,10 +330,36 @@ input, select, textarea {
   right: 0;
 }
 
+.mobile-drawer-close-btn {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border-standard);
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.mobile-drawer-close-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--accent-gold-dark);
+  background-color: rgba(255, 255, 255, 0.08);
+  box-shadow: var(--gold-glow);
+}
+
 .mobile-nav-links {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 24px;
+  width: 100%;
 }
 
 .mobile-nav-link {
@@ -312,23 +367,26 @@ input, select, textarea {
   font-family: var(--font-serif);
   font-style: italic;
   color: var(--text-secondary);
+  transition: all 0.3s ease;
 }
 
 .mobile-nav-link:hover {
   color: var(--accent-gold-light);
-  padding-left: 8px;
+  transform: scale(1.08);
 }
 
 .mobile-actions {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 16px;
-  margin-top: auto;
+  margin-top: 20px;
   border-top: 1px solid var(--border-standard);
   padding-top: 24px;
+  width: 100%;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .nav-links-desktop, .nav-actions {
     display: none;
   }
@@ -375,12 +433,75 @@ input, select, textarea {
   pointer-events: none;
 }
 
+.hero-title {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 72px;
+  font-weight: 400;
+  color: var(--text-primary);
+  line-height: 1.15;
+  margin-bottom: 24px;
+}
+
 .hero-subtitle {
   font-size: 16px;
   color: var(--text-secondary);
   max-width: 600px;
   margin: 24px auto 40px auto;
   line-height: 1.8;
+}
+
+.hero-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+@media (max-width: 1024px) {
+  .hero-title {
+    font-size: 56px;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 44px;
+  }
+  .hero-subtitle {
+    margin: 20px auto 32px auto;
+  }
+  .hero-section {
+    padding-top: 140px;
+    padding-bottom: 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 32px;
+  }
+  .hero-subtitle {
+    font-size: 14px;
+    margin: 16px auto 28px auto;
+  }
+  .hero-buttons {
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 320px;
+    margin-left: auto;
+    margin-right: auto;
+    gap: 12px;
+  }
+  .hero-buttons a {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+  .hero-section {
+    padding-top: 125px;
+    padding-bottom: 60px;
+  }
 }
 
 .hero-glow-overlay {
@@ -602,7 +723,17 @@ input, select, textarea {
   line-height: 1.6;
 }
 
-@media (max-width: 768px) {
+@media (min-width: 640px) and (max-width: 1024px) {
+  .process-line {
+    display: none;
+  }
+  .process-steps {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 40px;
+  }
+}
+
+@media (max-width: 639.98px) {
   .process-line {
     display: none;
   }
@@ -625,14 +756,18 @@ input, select, textarea {
 /* SECTION 3: PORTFOLIO BENTO GRID */
 .portfolio-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 24px;
   grid-auto-rows: 320px;
+  justify-content: center;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
 @media (max-width: 1024px) {
   .portfolio-grid {
     grid-template-columns: repeat(2, 1fr);
+    max-width: 100%;
   }
 }
 
@@ -640,6 +775,7 @@ input, select, textarea {
   .portfolio-grid {
     grid-template-columns: 1fr;
     grid-auto-rows: 280px;
+    max-width: 100%;
   }
 }
 
@@ -653,18 +789,23 @@ input, select, textarea {
 }
 
 .portfolio-card.large {
-  grid-column: span 2;
+  grid-column: span 1;
 }
 
-@media (max-width: 1024px) {
-  .portfolio-card.large {
-    grid-column: span 2;
-  }
+/* 5th solo card — centered to match other card widths */
+.portfolio-card-solo {
+  grid-column: 1 / -1;
+  width: calc(50% - 12px);
+  margin: 0 auto;
 }
 
 @media (max-width: 640px) {
   .portfolio-card.large {
     grid-column: span 1;
+  }
+  .portfolio-card-solo {
+    grid-column: span 1;
+    width: 100%;
   }
 }
 
@@ -851,7 +992,19 @@ input, select, textarea {
   align-items: stretch;
 }
 
-@media (max-width: 1024px) {
+@media (min-width: 640px) and (max-width: 1100px) {
+  .pricing-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .pricing-grid > *:last-child {
+    grid-column: span 2;
+    max-width: 500px;
+    justify-self: center;
+    width: 100%;
+  }
+}
+
+@media (max-width: 639.98px) {
   .pricing-grid {
     grid-template-columns: 1fr;
     max-width: 500px;
@@ -998,7 +1151,19 @@ input, select, textarea {
   gap: 28px;
 }
 
-@media (max-width: 1024px) {
+@media (min-width: 768px) and (max-width: 1100px) {
+  .testimonials-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .testimonials-grid > *:last-child {
+    grid-column: span 2;
+    max-width: 600px;
+    justify-self: center;
+    width: 100%;
+  }
+}
+
+@media (max-width: 767.98px) {
   .testimonials-grid {
     grid-template-columns: 1fr;
     max-width: 600px;
@@ -1236,7 +1401,8 @@ input, select, textarea {
 
 .contact-social-row {
   display: flex;
-  gap: 20px;
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
 .contact-social-item {
@@ -1352,6 +1518,16 @@ input, select, textarea {
 .contact-submit-btn:hover {
   background-color: var(--accent-gold-light);
   box-shadow: var(--gold-glow);
+}
+
+.contact-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.footer-subscribe-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Form success message */
@@ -1696,7 +1872,7 @@ input, select, textarea {
   font-size: 13px;
   color: var(--text-primary);
   background: transparent;
-  min-w: 0;
+  min-width: 0;
 }
 
 .footer-subscribe-input::placeholder {
@@ -1754,5 +1930,150 @@ input, select, textarea {
   .footer-bottom-bar {
     flex-direction: column;
     text-align: center;
+  }
+}
+
+/* AUTHENTICATED USER CUSTOM COMPONENTS */
+.user-profile-menu {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-standard);
+  padding: 6px 16px 6px 8px;
+  border-radius: 9999px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.user-profile-menu:hover {
+  border-color: rgba(196, 169, 106, 0.25);
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--accent-gold-dark);
+}
+
+.user-avatar-placeholder {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--accent-gold-dark);
+  color: #080808;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.user-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.logout-glass-btn {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-standard);
+  padding: 6px 12px;
+  border-radius: 9999px;
+  transition: all 0.3s ease;
+}
+
+.logout-glass-btn:hover {
+  color: var(--text-primary);
+  background-color: rgba(234, 67, 53, 0.1);
+  border-color: rgba(234, 67, 53, 0.3);
+}
+
+/* Mobile Drawer User Profile */
+.mobile-user-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.01);
+  border: 1px solid var(--border-standard);
+  padding: 20px;
+  border-radius: 12px;
+  width: 100%;
+}
+
+.mobile-user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.mobile-user-info .user-avatar,
+.mobile-user-info .user-avatar-placeholder {
+  width: 48px;
+  height: 48px;
+  font-size: 16px;
+}
+
+.mobile-user-info .user-name {
+  font-size: 15px;
+  max-width: 220px;
+}
+
+/* Auth Modal Error Message styling */
+.auth-error-msg {
+  background-color: rgba(234, 67, 53, 0.1);
+  border: 1px solid rgba(234, 67, 53, 0.25);
+  color: #ff8b80;
+  font-size: 12px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  text-align: left;
+  line-height: 1.4;
+}
+
+.auth-loading-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 0.8s linear infinite;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 480px) {
+  .section-heading {
+    font-size: 28px !important;
+    margin-bottom: 32px !important;
+  }
+  .cta-heading {
+    font-size: 32px !important;
+    margin-bottom: 20px !important;
+  }
+  .auth-modal-card {
+    padding: 32px 20px !important;
+    border-radius: 12px !important;
+  }
+  .auth-header {
+    font-size: 24px !important;
+    margin-bottom: 20px !important;
   }
 }

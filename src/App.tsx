@@ -1,6 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
+import type { User } from "@supabase/supabase-js";
+import { supabase, signInWithGoogle, signOutUser } from "./supabase";
+import imgAeroplane from "./assets/Aeroplane.png";
+import imgCarepulse from "./assets/Carepulse.png";
+import imgOmnifoodHero from "./assets/Omnifood-hero.png";
+import imgOmnifood from "./assets/Omnifood.png";
+import imgRedefineGaming from "./assets/Redefine-gaming.png";
+import imgGym from "./assets/Gym.png";
 import { 
-  Globe, 
   ArrowRight, 
   Eye, 
   EyeOff, 
@@ -82,22 +89,19 @@ const Counter: React.FC<CounterProps> = ({ target, suffix = "", label }) => {
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialMode: "login" | "signup";
+  mode: "login" | "signup";
+  onModeChange: (mode: "login" | "signup") => void;
 }
 
-const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode }) => {
-  const [mode, setMode] = useState<"login" | "signup">(initialMode);
+const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onModeChange }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
   const modalRef = useRef<HTMLDivElement>(null);
-
-  // Sync mode with trigger action
-  useEffect(() => {
-    setMode(initialMode);
-  }, [initialMode, isOpen]);
 
   // Tab Trap & Keyboard ESC Binding
   useEffect(() => {
@@ -143,6 +147,22 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode }) =
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
+  const handleGoogleSignIn = async () => {
+    try {
+      setLoading(true);
+      setErrorMsg("");
+      await signInWithGoogle();
+    } catch (err: unknown) {
+      console.error("Google OAuth error:", err);
+      setErrorMsg(
+        err instanceof Error
+          ? err.message
+          : "Failed to connect to Google OAuth. Please try again."
+      );
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     alert(`${mode === "login" ? "Logged in" : "Signed up"} successfully with: ${email}`);
@@ -173,15 +193,27 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode }) =
           {mode === "login" ? "Welcome to IgniteX" : "Create Account"}
         </h2>
 
+        {/* Error message */}
+        {errorMsg && <div className="auth-error-msg">{errorMsg}</div>}
+
         {/* Google OAuth */}
-        <button className="auth-google-btn">
-          <svg className="w-5 h-5" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
-            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
-          </svg>
-          <span>Continue with Google</span>
+        <button 
+          type="button" 
+          className="auth-google-btn" 
+          onClick={handleGoogleSignIn}
+          disabled={loading}
+        >
+          {loading ? (
+            <div className="auth-loading-spinner"></div>
+          ) : (
+            <svg className="w-5 h-5" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
+            </svg>
+          )}
+          <span>{loading ? "Connecting..." : "Continue with Google"}</span>
         </button>
 
         <div className="auth-divider">or</div>
@@ -261,12 +293,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode }) =
           {mode === "login" ? (
             <>
               Don't have an account?{" "}
-              <button onClick={() => setMode("signup")}>Sign Up</button>
+              <button onClick={() => onModeChange("signup")}>Sign Up</button>
             </>
           ) : (
             <>
               Already have an account?{" "}
-              <button onClick={() => setMode("login")}>Sign In</button>
+              <button onClick={() => onModeChange("login")}>Sign In</button>
             </>
           )}
         </div>
@@ -404,6 +436,27 @@ export default function App() {
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
 
+  // Supabase Auth state
+  const [user, setUser] = useState<User | null>(null);
+
+  // Listen to auth events
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        setAuthOpen(false);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
   // Contact Form states
   const [formData, setFormData] = useState({
     name: "",
@@ -420,6 +473,14 @@ export default function App() {
   });
 
   const [formSuccess, setFormSuccess] = useState(false);
+  const [formSubmitting, setFormSubmitting] = useState(false);
+  const [formSubmitError, setFormSubmitError] = useState("");
+
+  // Newsletter states
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterLoading, setNewsletterLoading] = useState(false);
+  const [newsletterSuccess, setNewsletterSuccess] = useState(false);
+  const [newsletterError, setNewsletterError] = useState("");
 
   // Trigger modal helper
   const openAuth = (mode: "login" | "signup") => {
@@ -517,26 +578,62 @@ export default function App() {
     validateField(name, value);
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Final check
+
+    // Final validation check
     validateField("name", formData.name);
     validateField("email", formData.email);
     validateField("message", formData.message);
 
     if (formData.name && formData.email && formData.message && !formErrors.name && !formErrors.email && !formErrors.message) {
-      setFormSuccess(true);
+      setFormSubmitting(true);
+      setFormSubmitError("");
+      // Insert into Supabase — budget_range matches the DB schema column name
+      const { error } = await supabase.from('contact_submissions').insert({
+        name: formData.name,
+        email: formData.email,
+        service: formData.service,
+        budget_range: formData.budget,
+        message: formData.message,
+        user_agent: navigator.userAgent,
+      });
+      setFormSubmitting(false);
+      if (error) {
+        console.error('Contact submission error:', error);
+        setFormSubmitError('Failed to send your message. Please try again.');
+      } else {
+        setFormSuccess(true);
+      }
     }
   };
 
-  // Newsletter subscription simulated alert
-  const handleNewsletterSubmit = (e: React.FormEvent) => {
+  // Newsletter subscription — insert into newsletter_subscribers table
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const input = (e.currentTarget as HTMLFormElement).querySelector("input") as HTMLInputElement;
-    if (input && input.value) {
-      alert(`Subscribed successfully: ${input.value}`);
-      input.value = "";
+    if (!newsletterEmail) return;
+
+    setNewsletterLoading(true);
+    setNewsletterError("");
+
+    const { error } = await supabase.from('newsletter_subscribers').insert(
+      { email: newsletterEmail, source: 'footer' },
+    );
+
+    setNewsletterLoading(false);
+
+    if (error) {
+      // If the email already exists (unique constraint), show a friendly message
+      if (error.code === '23505') {
+        setNewsletterSuccess(true);
+        setNewsletterEmail("");
+      } else {
+        console.error('Newsletter subscription error:', error);
+        setNewsletterError('Failed to subscribe. Please try again.');
+      }
+    } else {
+      setNewsletterSuccess(true);
+      setNewsletterEmail("");
     }
   };
 
@@ -548,8 +645,7 @@ export default function App() {
         <div className="container nav-container">
           {/* Logo Brand */}
           <a href="#" className="logo-link">
-            <Globe className="w-5 h-5" />
-            <span>IgniteX</span>
+            <img src="/ignitex-logo.png" alt="IgniteX" className="header-logo-img" />
           </a>
 
           {/* Links Desktop */}
@@ -565,12 +661,36 @@ export default function App() {
 
           {/* Actions Desktop */}
           <div className="nav-actions">
-            <button onClick={() => openAuth("signup")} className="signup-text-btn">
-              Sign Up
-            </button>
-            <button onClick={() => openAuth("login")} className="login-glass-btn">
-              Login
-            </button>
+            {user ? (
+              <div className="user-profile-menu">
+                {user.user_metadata?.avatar_url ? (
+                  <img 
+                    src={user.user_metadata.avatar_url} 
+                    alt={user.user_metadata.full_name || "User Avatar"} 
+                    className="user-avatar"
+                  />
+                ) : (
+                  <div className="user-avatar-placeholder">
+                    {user.email?.charAt(0).toUpperCase() || "U"}
+                  </div>
+                )}
+                <span className="user-name">
+                  {user.user_metadata?.full_name || user.email?.split("@")[0]}
+                </span>
+                <button onClick={async () => { await signOutUser(); }} className="logout-glass-btn">
+                  Log Out
+                </button>
+              </div>
+            ) : (
+              <>
+                <button onClick={() => openAuth("signup")} className="signup-text-btn">
+                  Sign Up
+                </button>
+                <button onClick={() => openAuth("login")} className="login-glass-btn">
+                  Login
+                </button>
+              </>
+            )}
           </div>
 
           {/* Hamburger Drawer Activator */}
@@ -592,6 +712,13 @@ export default function App() {
         onClick={() => setIsDrawerOpen(false)}
       />
       <aside className={`mobile-drawer ${isDrawerOpen ? "open" : ""}`}>
+        <button 
+          onClick={() => setIsDrawerOpen(false)} 
+          className="mobile-drawer-close-btn"
+          aria-label="Close Navigation Menu"
+        >
+          <X className="w-5 h-5" />
+        </button>
         <nav className="mobile-nav-links">
           <a href="#services" onClick={() => setIsDrawerOpen(false)} className="mobile-nav-link">Services</a>
           <a href="#process" onClick={() => setIsDrawerOpen(false)} className="mobile-nav-link">Process</a>
@@ -603,12 +730,45 @@ export default function App() {
         </nav>
         
         <div className="mobile-actions">
-          <button onClick={() => openAuth("signup")} className="signup-text-btn" style={{ textAlign: "left" }}>
-            Sign Up
-          </button>
-          <button onClick={() => openAuth("login")} className="login-glass-btn" style={{ width: "100%" }}>
-            Login
-          </button>
+          {user ? (
+            <div className="mobile-user-profile">
+              <div className="mobile-user-info">
+                {user.user_metadata?.avatar_url ? (
+                  <img 
+                    src={user.user_metadata.avatar_url} 
+                    alt={user.user_metadata.full_name || "User Avatar"} 
+                    className="user-avatar"
+                  />
+                ) : (
+                  <div className="user-avatar-placeholder">
+                    {user.email?.charAt(0).toUpperCase() || "U"}
+                  </div>
+                )}
+                <span className="user-name">
+                  {user.user_metadata?.full_name || user.email}
+                </span>
+              </div>
+              <button 
+                onClick={async () => { 
+                  await signOutUser(); 
+                  setIsDrawerOpen(false); 
+                }} 
+                className="logout-glass-btn"
+                style={{ width: "100%", marginTop: "12px" }}
+              >
+                Log Out
+              </button>
+            </div>
+          ) : (
+            <>
+              <button onClick={() => openAuth("signup")} className="signup-text-btn" style={{ textAlign: "center" }}>
+                Sign Up
+              </button>
+              <button onClick={() => openAuth("login")} className="login-glass-btn" style={{ width: "100%" }}>
+                Login
+              </button>
+            </>
+          )}
         </div>
       </aside>
 
@@ -631,16 +791,13 @@ export default function App() {
           <span className="eyebrow fade-up active" style={{ animationDelay: "150ms" }}>
             CRAFTING DIGITAL ADVANTAGES
           </span>
-          <h1 
-            style={{ fontFamily: "var(--font-serif)", fontStyle: "italic", fontSize: "72px", fontWeight: "normal", color: "#f0ede8" }} 
-            className="fade-up active"
-          >
+          <h1 className="hero-title fade-up active">
             Igniting premium web experiences
           </h1>
           <p className="hero-subtitle fade-up active">
             We forge fast, responsive, custom-coded digital masterpieces with pixel-perfect cinematic craftsmanship and modern technology architectures.
           </p>
-          <div className="fade-up active" style={{ display: "flex", justifyContent: "center", gap: "20px" }}>
+          <div className="hero-buttons fade-up active">
             <a href="#services" className="cta-btn-solid" style={{ color: "#000" }}>
               Explore Services
             </a>
@@ -817,16 +974,16 @@ export default function App() {
           <h2 className="section-heading fade-up">Projects that speak louder than words</h2>
 
           <div className="portfolio-grid">
-            {/* Project 1 - Large */}
+            {/* Project 1 */}
             <div className="portfolio-card large fade-up delay-100">
               <div className="portfolio-bg-gradient"></div>
               <div 
                 className="portfolio-image-placeholder" 
-                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop')` }}
+                style={{ backgroundImage: `url(${imgAeroplane})` }}
               ></div>
-              <span className="portfolio-tag">SAAS ARCHITECTURE</span>
+              <span className="portfolio-tag">TRAVEL & BOOKING</span>
               <div className="portfolio-content">
-                <h3 className="portfolio-name">Vertex Cloud</h3>
+                <h3 className="portfolio-name">Aeroplane</h3>
               </div>
               <div className="portfolio-hover-overlay">
                 <span className="portfolio-hover-text">
@@ -836,16 +993,16 @@ export default function App() {
               </div>
             </div>
 
-            {/* Project 2 - Small */}
-            <div className="portfolio-card fade-up delay-200">
+            {/* Project 2 */}
+            <div className="portfolio-card large fade-up delay-100">
               <div className="portfolio-bg-gradient"></div>
               <div 
                 className="portfolio-image-placeholder" 
-                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?q=80&w=500&auto=format&fit=crop')` }}
+                style={{ backgroundImage: `url(${imgCarepulse})` }}
               ></div>
-              <span className="portfolio-tag">FINTECH PORTAL</span>
+              <span className="portfolio-tag">HEALTHCARE</span>
               <div className="portfolio-content">
-                <h3 className="portfolio-name">Apex Capital</h3>
+                <h3 className="portfolio-name">CarePulse</h3>
               </div>
               <div className="portfolio-hover-overlay">
                 <span className="portfolio-hover-text">
@@ -855,16 +1012,16 @@ export default function App() {
               </div>
             </div>
 
-            {/* Project 3 - Small */}
-            <div className="portfolio-card fade-up delay-100">
+            {/* Project 3 */}
+            <div className="portfolio-card large fade-up delay-100">
               <div className="portfolio-bg-gradient"></div>
               <div 
                 className="portfolio-image-placeholder" 
-                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1618005198143-e5283b519a7f?q=80&w=500&auto=format&fit=crop')` }}
+                style={{ backgroundImage: `url(${imgOmnifoodHero})` }}
               ></div>
-              <span className="portfolio-tag">E-COMMERCE STORE</span>
+              <span className="portfolio-tag">FOOD DELIVERY</span>
               <div className="portfolio-content">
-                <h3 className="portfolio-name">Mono Apparel</h3>
+                <h3 className="portfolio-name">Omnifood Hero</h3>
               </div>
               <div className="portfolio-hover-overlay">
                 <span className="portfolio-hover-text">
@@ -874,16 +1031,16 @@ export default function App() {
               </div>
             </div>
 
-            {/* Project 4 - Large */}
-            <div className="portfolio-card large fade-up delay-200">
+            {/* Project 4 */}
+            <div className="portfolio-card large fade-up delay-100">
               <div className="portfolio-bg-gradient"></div>
               <div 
                 className="portfolio-image-placeholder" 
-                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=800&auto=format&fit=crop')` }}
+                style={{ backgroundImage: `url(${imgOmnifood})` }}
               ></div>
-              <span className="portfolio-tag">LUXURY ESTATE</span>
+              <span className="portfolio-tag">E-COMMERCE</span>
               <div className="portfolio-content">
-                <h3 className="portfolio-name">Kona Villas</h3>
+                <h3 className="portfolio-name">Omnifood</h3>
               </div>
               <div className="portfolio-hover-overlay">
                 <span className="portfolio-hover-text">
@@ -893,16 +1050,16 @@ export default function App() {
               </div>
             </div>
 
-            {/* Project 5 - Small */}
-            <div className="portfolio-card fade-up delay-100">
+            {/* Project 5 */}
+            <div className="portfolio-card large fade-up delay-100">
               <div className="portfolio-bg-gradient"></div>
               <div 
                 className="portfolio-image-placeholder" 
-                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=500&auto=format&fit=crop')` }}
+                style={{ backgroundImage: `url(${imgRedefineGaming})` }}
               ></div>
-              <span className="portfolio-tag">MOBILE COMPANION</span>
+              <span className="portfolio-tag">GAMING & ESPORTS</span>
               <div className="portfolio-content">
-                <h3 className="portfolio-name">Onyx Sync</h3>
+                <h3 className="portfolio-name">Redefine Gaming</h3>
               </div>
               <div className="portfolio-hover-overlay">
                 <span className="portfolio-hover-text">
@@ -912,16 +1069,16 @@ export default function App() {
               </div>
             </div>
 
-            {/* Project 6 - Small */}
-            <div className="portfolio-card fade-up delay-200">
+            {/* Project 6 */}
+            <div className="portfolio-card large fade-up delay-100">
               <div className="portfolio-bg-gradient"></div>
               <div 
                 className="portfolio-image-placeholder" 
-                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=500&auto=format&fit=crop')` }}
+                style={{ backgroundImage: `url(${imgGym})` }}
               ></div>
-              <span className="portfolio-tag">WEB APP WEB</span>
+              <span className="portfolio-tag">FITNESS &amp; WELLNESS</span>
               <div className="portfolio-content">
-                <h3 className="portfolio-name">Valor Esports</h3>
+                <h3 className="portfolio-name">Gym</h3>
               </div>
               <div className="portfolio-hover-overlay">
                 <span className="portfolio-hover-text">
@@ -941,10 +1098,10 @@ export default function App() {
           
           {/* Animated Intersection Counters Row */}
           <div className="stats-row fade-up">
-            <Counter target={120} suffix="+" label="Projects Delivered" />
-            <Counter target={98} suffix="%" label="Client Satisfaction" />
+            <Counter target={50} suffix="+" label="Projects Delivered" />
+            <Counter target={30} suffix="%" label="Client Satisfaction" />
             <Counter target={5} suffix="+" label="Years of Experience" />
-            <Counter target={12} suffix="" label="Agency Artisans" />
+            <Counter target={7} suffix="" label="Agency Artisans" />
           </div>
 
           {/* Manifesto Split Container */}
@@ -973,7 +1130,7 @@ export default function App() {
             <div className="pricing-card fade-up delay-100">
               <span className="plan-name">Starter</span>
               <div className="plan-price-box">
-                <span className="plan-price">$4,800</span>
+                <span className="plan-price">₹5,000</span>
               </div>
               <span className="plan-billing-note">One-time investment · Fixed scope</span>
               <div className="pricing-divider"></div>
@@ -1019,7 +1176,7 @@ export default function App() {
               <div className="popular-badge">Most Popular</div>
               <span className="plan-name">Growth</span>
               <div className="plan-price-box">
-                <span className="plan-price">$8,500</span>
+                <span className="plan-price">₹7,500</span>
               </div>
               <span className="plan-billing-note">One-time investment · Highly recommended</span>
               <div className="pricing-divider"></div>
@@ -1064,9 +1221,9 @@ export default function App() {
             <div className="pricing-card fade-up delay-300">
               <span className="plan-name">Enterprise</span>
               <div className="plan-price-box">
-                <span className="plan-price">$15k+</span>
+                <span className="plan-price">₹10,000</span>
               </div>
-              <span className="plan-billing-note">Custom custom configurations</span>
+              <span className="plan-billing-note">Custom configurations · Tailored scope</span>
               <div className="pricing-divider"></div>
               
               <ul className="feature-list">
@@ -1213,16 +1370,16 @@ export default function App() {
                 {/* Email Row */}
                 <div className="contact-detail-row">
                   <span className="detail-label">Email</span>
-                  <a href="mailto:hello@ignitex.dev" className="detail-value">
-                    hello@ignitex.dev
+                  <a href="mailto:ignitex1996@gmail.com" className="detail-value">
+                    ignitex1996@gmail.com
                   </a>
                 </div>
 
                 {/* Phone Row */}
                 <div className="contact-detail-row">
                   <span className="detail-label">Phone</span>
-                  <a href="tel:+10000000000" className="detail-value">
-                    +1 (000) 000-0000
+                  <a href="tel:+917828720729" className="detail-value">
+                    +91 7828720729
                   </a>
                 </div>
 
@@ -1381,8 +1538,14 @@ export default function App() {
                     )}
                   </div>
 
-                  <button type="submit" className="contact-submit-btn">
-                    Submit Proposal
+                  {formSubmitError && (
+                    <p style={{ color: 'var(--accent-warning, #f59e0b)', fontSize: '0.85rem', marginTop: '8px', textAlign: 'center' }}>
+                      {formSubmitError}
+                    </p>
+                  )}
+
+                  <button type="submit" className="contact-submit-btn" disabled={formSubmitting}>
+                    {formSubmitting ? 'Sending...' : 'Submit Proposal'}
                   </button>
                 </form>
               )}
@@ -1399,8 +1562,7 @@ export default function App() {
             {/* Column 1: Brand Info */}
             <div className="footer-column">
               <span className="footer-brand-title">
-                <Globe className="w-5 h-5" />
-                <span>IgniteX</span>
+                <img src="/ignitex-logo.png" alt="IgniteX" className="footer-logo-img" />
               </span>
               <p className="footer-tagline">
                 Forging premium responsive digital competitive advantages through high engineering and pristine design.
@@ -1458,18 +1620,50 @@ export default function App() {
                 Subscribe to receive our latest insights and design releases.
               </p>
               
-              <form onSubmit={handleNewsletterSubmit} className="footer-subscribe-bar">
-                <input 
-                  type="email" 
-                  placeholder="Enter your email" 
-                  required
-                  className="footer-subscribe-input"
-                  aria-label="Newsletter email subscription"
-                />
-                <button type="submit" className="footer-subscribe-btn" aria-label="Subscribe">
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </form>
+              {newsletterSuccess ? (
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '10px',
+                  padding: '12px 16px',
+                  background: 'rgba(16, 185, 129, 0.1)',
+                  border: '1px solid rgba(16, 185, 129, 0.3)',
+                  borderRadius: '10px',
+                  marginTop: '12px'
+                }}>
+                  <Check className="w-4 h-4" style={{ color: '#10b981', flexShrink: 0 }} />
+                  <span style={{ fontSize: '0.85rem', color: '#10b981' }}>You're subscribed! Welcome aboard.</span>
+                </div>
+              ) : (
+                <>
+                  <form onSubmit={handleNewsletterSubmit} className="footer-subscribe-bar">
+                    <input 
+                      type="email" 
+                      placeholder="Enter your email" 
+                      required
+                      value={newsletterEmail}
+                      onChange={(e) => setNewsletterEmail(e.target.value)}
+                      className="footer-subscribe-input"
+                      aria-label="Newsletter email subscription"
+                    />
+                    <button 
+                      type="submit" 
+                      className="footer-subscribe-btn" 
+                      aria-label="Subscribe"
+                      disabled={newsletterLoading}
+                    >
+                      {newsletterLoading ? (
+                        <div style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+                      ) : (
+                        <ArrowRight className="w-4 h-4" />
+                      )}
+                    </button>
+                  </form>
+                  {newsletterError && (
+                    <p style={{ color: '#f87171', fontSize: '0.78rem', marginTop: '6px' }}>{newsletterError}</p>
+                  )}
+                </>
+              )}
             </div>
           </div>
 
@@ -1492,7 +1686,8 @@ export default function App() {
       <AuthModal 
         isOpen={authOpen} 
         onClose={() => setAuthOpen(false)} 
-        initialMode={authMode} 
+        mode={authMode}
+        onModeChange={setAuthMode}
       />
 
     </div>
